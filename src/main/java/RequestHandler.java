@@ -23,17 +23,18 @@ public class RequestHandler implements Runnable {
 
 
     private String generateAnswer(int year) {
-        JSONObject answer = new JSONObject();
-        int code = (year == -1) ? 400 : 200;
+       JSONObject answer = new JSONObject();
+        int code = (year < 0) ? 400 : 200;
         String message =
                 (year == -1) ?
                         "invalid parameter" :
+                        (year == -2) ? "invalid year" :
                         (year % 4 != 0 || year % 100 == 0 && year % 400 != 0) ?
-                                "13/09/" + String.valueOf(year).substring(2,4) :
-                                "14/09/" + String.valueOf(year).substring(2,4);
+                                "13/09/" + year%100 :
+                                "14/09/" + year%100;
 
-       answer.put("code", code);
-       answer.put("message", message);
+       answer.put("errorCode", code);
+       answer.put("dataMessage", message);
 
         return StringEscapeUtils.unescapeJava(answer.toJSONString());
     }
@@ -52,7 +53,14 @@ public class RequestHandler implements Runnable {
             return -1;
         }
 
-        return Integer.parseInt(params.substring(paramIndex + 1));
+        int result;
+        try {
+            result = Integer.parseInt(params.substring(paramIndex + 1));
+        } catch (NumberFormatException e) {
+            return -2;
+        }
+
+        return result;
     }
 
 
